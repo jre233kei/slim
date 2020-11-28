@@ -148,11 +148,12 @@ namespace c14 = slim::element;
 namespace c17 = slim::element;
 
 int tnum = 10;
+int tnump1 = tnum+1;
 
 // global lock
 std::mutex mut;
 // membrane local lock
-std::vector<std::mutex> muts[tnum+1];
+std::vector<std::mutex> muts[tnump1];
 // std::vector<std::unique_ptr<std::mutex>> tmut;
 
 
