@@ -152,7 +152,7 @@ const int tnum = 10;
 // global lock
 std::mutex mut;
 // membrane local lock
-std::vector<std::mutex> muts[tnum+1];
+std::vector<std::mutex> muts(tnum+1);
 // std::vector<std::unique_ptr<std::mutex>> tmut;
 
 
