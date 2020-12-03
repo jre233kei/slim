@@ -52,6 +52,7 @@
 #endif
 
 #include <algorithm>
+#include <thread>
 
 typedef void (*callback_0)(LmnReactCxtRef, LmnMembraneRef);
 typedef void (*callback_1)(LmnReactCxtRef, LmnMembraneRef, LmnAtomRef,
@@ -251,13 +252,45 @@ void lmn_run(Vector *start_rulesets) {
 
 /** 膜スタックに基づいた通常実行 */
 static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
+  int tnum = 2; 
+  auto react = [&](MemReactContext *ctx, LmnMembraneRef m, int ti){
+    BOOL reacted = false;
+    do{
+      reacted = react_all_rulesets(ctx,m);
+    }while(reacted);
+  };
+
   while (!ctx->memstack_isempty()) {
-    LmnMembraneRef mem = ctx->memstack_peek();
-    if (!react_all_rulesets(ctx, mem)) {
-      /* ルールが何も適用されなければ膜スタックから先頭を取り除く */
-      ctx->memstack_pop();
+    // 後でdelete出来るように保存しておく
+    std::vector<MemReactContext *> ctx_copied_vec;
+
+    std::vector<std::thread> ts;
+    for(int i=0;i<tnum;i++){
+      if(ctx->memstack_isempty())
+        break;
+      LmnMembraneRef mem = ctx->memstack_pop();
+
+      // ctxをコピー
+      MemReactContext *ctx_copied = new MemReactContext(*ctx);
+      ctx_copied_vec.push_back(ctx_copied);
+      ts.push_back(std::thread(react, ctx_copied, mem, i));
+    }
+    for(int j=0;j<ts.size();j++){
+      ts[j].join(); 
+    }
+    for(int j=0;j<ts.size();j++){
+      delete ctx_copied_vec[j];
     }
   }
+
+
+  // while (!ctx->memstack_isempty()) {
+  //   LmnMembraneRef mem = ctx->memstack_peek();
+  //   if (!react_all_rulesets(ctx, mem)) {
+  //     /* ルールが何も適用されなければ膜スタックから先頭を取り除く */
+  //     ctx->memstack_pop();
+  //   }
+  // }
 }
 
 /**
