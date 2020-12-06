@@ -281,7 +281,9 @@ void lmn_free_atom(LmnAtomRef atom, LmnLinkAttr attr) {
   if (LMN_ATTR_IS_DATA(attr)) {
     free_data_atom((LmnDataAtomRef)atom, attr);
   } else { /* symbol atom */
+    // mut.lock();
     lmn_delete_atom((LmnSymbolAtomRef)atom);
+    // mut.unlock();
   }
 }
 

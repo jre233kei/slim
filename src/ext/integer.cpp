@@ -77,6 +77,7 @@ void integer_set(LmnReactCxtRef rc,
                  LmnAtomRef a1, LmnLinkAttr t1,
                  LmnAtomRef a2, LmnLinkAttr t2)
 {
+  mut.lock();
   Vector *srcvec;
   LmnWord i;
   long long n, start, end;
@@ -110,6 +111,7 @@ void integer_set(LmnReactCxtRef rc,
 
   for (i = 0; i < srcvec->get_num(); i++) LMN_FREE(srcvec->get(i));
   delete srcvec;
+  mut.unlock();
 }
 
 
