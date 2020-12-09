@@ -365,89 +365,42 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
   int tnum = 88; 
 
   auto react = [&](MemReactContext *ctx, LmnMembraneRef m, int ti){
-
     BOOL reacted = false;
       do{
-        // std::cout << "will react " << ti << std::endl;
         reacted = react_all_rulesets(ctx,m,ti);
-        // if(reacted)
-          // std::cout << "reacted " << ti << std::endl;
-        // else{
-          // std::cout << "not reactfed " << ti << std::endl;
-        // }
-        // std::cout << "reacted " << ti << std::endl;
       }while(reacted);
-      // std::cout << "reacted outer " << ti << std::endl;
   };
 
-  // グローバルルート膜対策 -> 最初に初期状態空間を構築しているので意味ない
-  // LmnMembraneRef gmem = ctx->memstack_pop();
-  // MemReactContext *ctx_copied = new MemReactContext(gmem, REACT_MEM_ORIENTED);
-  // LmnReactCxt *rc_copied = new LmnReactCxt(*rc);
-  // MemReactContext ctx_copied = MemReactContext(mem);
-  // react(ctx, gmem, 0);
-
-  // int cnt = 0;
-
+ std::function<void(MemReactContext* , LmnMembraneRef)> joiner = 
+  [&react, &joiner](MemReactContext *ctx, LmnMembraneRef mem){
+    if(mem->child_mem_num()>0){
+      std::vector<std::thread> ts;
+      LmnMembrane *mn = mem->child_head;
+      while(true){
+        std::stringstream ss;
+        ss << "Local:\t" << mem->id;
+        std::cout << ss.str() << std::endl;
+        std::cout << "ID" << mn->id << std::endl;
+        ts.push_back(std::thread(joiner, ctx, mn));
+        if(mn->next==NULL)
+          break;
+        mn = mn->next;
+      }
+      for(int j=0;j<ts.size();j++){
+        ts[j].join(); 
+      }
+      ts.clear();
+    }
+    std::stringstream ss_start;
+    ss_start << "Local:\t" << mem->id;
+    std::cout << ss_start.str() << std::endl;
+    MemReactContext *ctx_copied = new MemReactContext(*ctx);
+    react(ctx_copied, mem, 9999);
+    delete ctx_copied;
+  };
   std::cout << "Global: " << ctx->get_global_root()->id << std::endl;
-
+  joiner(ctx, ctx->memstack_first());
   
-
-  while (!ctx->memstack_isempty()) {
-    int parent_id = -1;
-    // cnt++;
-    // if(cnt != 1)
-    //   break;
-
-    // 後でdelete出来るように保存しておく
-    std::vector<MemReactContext *> ctx_copied_vec;
-
-    std::vector<std::thread> ts;
-    for(int i=0;i<tnum;i++){
-      if(ctx->memstack_isempty())
-        break;
-
-      if(ctx->memstack_peek()->id==parent_id)
-        break;
-      
-      LmnMembraneRef mem = ctx->memstack_pop();
-      if(mem->parent!=NULL)
-        parent_id = mem->parent->id;
-
-      // ctxをコピー
-      MemReactContext *ctx_copied = new MemReactContext(*ctx);
-
-
-      std::stringstream ss_start;
-      ss_start << "Local:\t" << mem->id;
-      if(mem->parent!=NULL)
-        ss_start << "\tParent:\t" << parent_id;
-      std::cout << ss_start.str() << std::endl;
-
-      // ctx_copied->work_array = std::vector<LmnRegister>(std::begin(ctx->work_array), std::end(ctx->work_array));
-
-      ctx_copied_vec.push_back(ctx_copied);
-      // LmnReactCxt *rc_copied = new LmnReactCxt(*rc);
-      // MemReactContext ctx_copied = MemReactContext(mem);
-
-      // std::cout << *mem << std::endl;
-      ts.push_back(std::thread(react, ctx_copied, mem, i));
-      // std::cout << "ts_size" << ts.size() << std::endl;
-    }
-    // std::cout << "cnt :" << cnt << std::endl; 
-    // for(int j=0;j<tnum;j++){
-    for(int j=0;j<ts.size();j++){
-      // std::cout << "thread[" << j << "] will be finished"<< std::endl;
-      ts[j].join(); 
-      // ts[j].detach();
-      // std::cout << "thread[" << j << "] finished"<< std::endl;
-    }
-    for(int j=0;j<ts.size();j++){
-      delete ctx_copied_vec[j];
-    }
-    // std::cout << "ok" << std::endl;
-  }
-
 
   /* 元コード */
   // while (!ctx->memstack_isempty()) {
@@ -458,7 +411,6 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
   //     ctx->memstack_pop();
   //   }
   // }
-
 
 }
 
