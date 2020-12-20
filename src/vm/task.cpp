@@ -47,6 +47,8 @@
 #include "verifier/runtime_status.h"
 #include "verifier/verifier.h"
 
+#include "../element/instruction.hpp"
+
 #ifdef USE_FIRSTCLASS_RULE
 #include "firstclass_rule.h"
 #endif
@@ -367,19 +369,27 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
   auto react = [&](MemReactContext *ctx, LmnMembraneRef m, int ti){
 
     // 膜を生成する個数
-    int newmem_cnt = 4;
+    // int newmem_cnt = 4;
 
     BOOL reacted = false;
       do{
         // std::cout << "will react " << ti << std::endl;
         reacted = react_all_rulesets(ctx,m,ti);
-        if(reacted && m->id==1){
-          newmem_cnt--;
-          if(newmem_cnt==0){
-            ctx->memstack_push_front(m);
-            break;
-          }
+        if(m->is_active()){
+          // std::cout << "active" << std::endl;
+        }else{
+          std::cout << "inactive" << std::endl;
+          std::cout << m->id << std::endl;
+          ctx->memstack_push_front(m);
+          break;
         }
+        // if(reacted && m->id==1){
+        //   newmem_cnt--;
+        //   if(newmem_cnt==0){
+        //     ctx->memstack_push_front(m);
+        //     break;
+        //   }
+        // }
         // if(reacted)
           // std::cout << "reacted " << ti << std::endl;
         // else{
@@ -592,10 +602,19 @@ BOOL react_rule(LmnReactCxtRef rc, LmnMembraneRef mem, LmnRuleRef rule, int ti) 
   translated = rule->translated;
   inst_seq = rule->inst_seq;
 
-  if(rule->inst_seq_len>0){
-    for(int i=0; i<rule->inst_seq_len; i++)
-      printf("Inst: %hhu\n",*(inst_seq + i*sizeof(LmnInstrOp)));
-  }
+  // int inst_ptr = 0;
+
+  // if(rule->inst_seq_len>0){
+  //   for(int i=0; i<rule->inst_seq_len; i++){
+  //     LmnInstruction op = (LmnInstruction) *(inst_seq + inst_ptr*sizeof(LmnInstrOp));
+  //     std::cout << op << std::endl;
+  //     inst_ptr += instr_spec.at(op).args.size()+1;
+  //     std::cout << instr_spec.at(op).op_str << " " << instr_spec.at(op).args.size() << std::endl;
+
+  //     // std::cout << instr_spec[i]-> << std::endl;
+  //     printf("Inst: %hhu\n",*(inst_seq + inst_ptr*sizeof(LmnInstrOp)));
+  //   }
+  // }
   rc->resize(1);
   rc->wt(0) = (LmnWord)mem;
   rc->tt(0) = TT_MEM;
@@ -1288,8 +1307,6 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
 
   if (lmn_env.find_atom_parallel)
     return FALSE;
-
-
 
   // std::cout << instr_spec.at((LmnInstruction)op).op_str << " " << ti << std::endl;
 
