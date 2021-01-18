@@ -52,9 +52,13 @@ static BOOL delete_redundant_outproxies(LmnReactCxtRef rc, LmnMembraneRef mem,
   AtomListEntryRef ent;
   LmnSymbolAtomRef o0;
 
+  // mut.lock();
+
   ent = mem->get_atomlist(LMN_OUT_PROXY_FUNCTOR);
-  if (!ent)
+  if (!ent){
+    // mut.unlock();
     return FALSE;
+  }
 
   EACH_ATOM(o0, ent, ({
               LmnSymbolAtomRef o1;
@@ -91,6 +95,7 @@ static BOOL delete_redundant_outproxies(LmnReactCxtRef rc, LmnMembraneRef mem,
                 }
               }
             }));
+  // mut.unlock();
   return FALSE;
 }
 

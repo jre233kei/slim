@@ -617,7 +617,9 @@ static void init_internal(void) {
 
   if (!lmn_env.translate) {
     init_so_handles();
+    mut.lock();
     init_default_system_ruleset();
+    mut.unlock();
     if (lmn_env.enable_por)
       dpor_env_init();
     mpool_init();
