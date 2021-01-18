@@ -751,103 +751,22 @@ HashSet *insertconnectors(slim::vm::RuleContext *rc, LmnMembraneRef mem,
 void slim::vm::interpreter::findatom(LmnReactCxtRef rc, LmnRuleRef rule,
                                      LmnRuleInstr instr, LmnMembrane *mem,
                                      LmnFunctor f, size_t reg, int ti=9999) {
-  
-
-  // std::cout << *mem << std::endl;
-  // std::stringstream ss1;
-  // ss1 << "1: " << mem->get_atomlist(f)->size() << " " << mem;
-  // std::cout << ss1.str() << std::endl;
-
-  // printf("1: %d %d\n",mem->get_atomlist(f)->size(), mem);
-
-  // std::cout << "atomlist get start " << ti << std::endl;
-
   auto atomlist_ent = mem->get_atomlist(f);
-
-  // std::cout << "atomlist get end " << ti << std::endl;
-
-  // std::stringstream ss_start;
-  // ss_start << "findatom internal: " << std::this_thread::get_id() << " atomlist_ent: " << atomlist_ent;
-  // std::cout << ss_start.str() << std::endl;
-
 
   if (!atomlist_ent)
     return;
 
-  // std::stringstream ss1;
-  // ss1 << "will find! " << ti;
-  // std::cout << ss1.str() << std::endl;
-
-  // mut.lock();
   auto iter = std::begin(*atomlist_ent);
   auto end = std::end(*atomlist_ent);
-  // if (iter == end){
-  //   // mut.unlock();
-  //   return;
-  // }
-  
-  if(atomlist_ent->size() == 0)
+  if (iter == end)
     return;
 
-  // std::stringstream ss2;
-  // ss2 << "transform start " << ti;
-  // std::cout << ss2.str() << std::endl;
-
-  // std::cout << "transform start " << ti << std::endl;
-
   auto v = std::vector<LmnRegister>();
+  std::transform(iter, end, std::back_inserter(v), [](LmnSymbolAtomRef atom) {
+    return LmnRegister({(LmnWord)atom, LMN_ATTR_MAKE_LINK(0), TT_ATOM});
+  });
 
-  int atomlist_len = atomlist_ent->size();
-  int at_cnt = 0;
-
-  for(auto atom: *atomlist_ent){
-    v.push_back(LmnRegister({(LmnWord)atom, LMN_ATTR_MAKE_LINK(0), TT_ATOM}));
-    at_cnt++;
-    if(at_cnt > atomlist_len){
-      auto atom = atomlist_ent->head;
-      for(int i=0;i<atomlist_len;i++){
-        std::cout << atom->str() << " " << (long long)atom->attr[0] << std::endl;
-        atom = atom->next;
-      }
-      // std::cout << *mem << std::endl;
-      std::cout << atomlist_len << std::endl;
-      std::cout << "ERROR" << std::endl;
-      // 異常終了させる
-      // return;
-      exit(1);
-    }
-    // std::stringstream ss;
-    // ss << "transformed " << at_cnt++ << "/" << atomlist_len << " " << ti;
-    
-    // std::cout << ss.str() << std::endl;
-  }
-  // std::transform(iter, end, std::back_inserter(v), [at_cnt,atomlist_len](LmnSymbolAtomRef atom) {
-  //   at_cnt++;
-  //   if(at_cnt > atomlist_len)
-  //     exit(1);
-  //   return LmnRegister({(LmnWord)atom, LMN_ATTR_MAKE_LINK(0), TT_ATOM});
-  // });
-
-  // std::stringstream ss3;
-  // ss3 << "transform end  " << ti;
-  // std::cout << ss3.str() << std::endl;
-
-  // mut.lock();
   this->false_driven_enumerate(reg, std::move(v));
-  // mut.unlock();
-
-  // std::stringstream ss4;
-  // ss4 << "find finished!  " << ti;
-  // std::cout << ss4.str() << std::endl;
-
-  // std::cout << "find finished!" << ti << std::endl;
-
-  // std::stringstream ss2;
-  // ss2 << "2: " << mem->get_atomlist(f)->size() << " " << mem;
-  // std::cout << ss2.str() << std::endl;
-  // mut.unlock();
-
-  // printf("2: %d %d\n",mem->get_atomlist(f)->size(), mem);
 }
 
 /** find atom with a hyperlink occurred in the current rule for the first time.
@@ -1157,9 +1076,9 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
 
 
 
-  mut.lock();
-  std::cout << instr_spec.at((LmnInstruction)op).op_str << " " << ti << std::endl;
-  mut.unlock();
+  // mut.lock();
+  // std::cout << instr_spec.at((LmnInstruction)op).op_str << " " << ti << std::endl;
+  // mut.unlock();
 
   switch (op) {
   case INSTR_SPEC: {
@@ -1840,7 +1759,9 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
     READ_VAL(LmnInstrVar, instr, memi);
     READ_VAL(LmnLinkAttr, instr, attr);
     if (LMN_ATTR_IS_DATA(attr)) {
+      mut.lock();
       READ_DATA_ATOM(ap, attr);
+      mut.unlock();
     } else { /* symbol atom */
       LmnFunctor f;
 
@@ -2400,11 +2321,13 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
 
     /* リンク先の取得をせずにリンク元の情報を格納しておく。
      * リンク元が格納されていることを示すため最下位のビットを立てる */
+    mut.lock();
 
     rc->reg(linki) = {
         (LmnWord)((LmnSymbolAtomRef)rc->wt(atomi))->get_link(posi),
         ((LmnSymbolAtomRef)rc->wt(atomi))->get_attr(posi), TT_ATOM};
 
+    mut.unlock();
     break;
   }
   case INSTR_HYPERGETLINK:
@@ -2730,14 +2653,19 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
 
     if (LMN_ATTR_IS_DATA(rc->at(atomi)) == LMN_ATTR_IS_DATA(attr)) {
       if (LMN_ATTR_IS_DATA(rc->at(atomi))) {
+        mut.lock();
         BOOL eq;
-        if (rc->at(atomi) != attr)
+        if (rc->at(atomi) != attr){
+          mut.unlock();
           return FALSE; /* comp attr */
+        }
         LmnByte type;
         READ_CMP_DATA_ATOM(attr, rc->wt(atomi), eq, type);
         rc->tt(atomi) = type;
-        if (!eq)
+        if (!eq){
+          mut.unlock();
           return FALSE;
+        }
       } else { /* symbol atom */
         READ_VAL(LmnFunctor, instr, f);
         mut.lock();
@@ -2847,7 +2775,9 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
       break;
     }
     case INSTR_ISGROUND: {
+      mut.lock();
       b = ground_atoms(srcvec, avovec, atoms, &natoms);
+      mut.unlock();
       break;
     }
     }
@@ -3410,28 +3340,38 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
   case INSTR_ISUNARY: {
     LmnInstrVar atomi;
     READ_VAL(LmnInstrVar, instr, atomi);
+    mut.lock();
 
     if (LMN_ATTR_IS_DATA(rc->at(atomi))) {
       switch (rc->at(atomi)) {
       case LMN_SP_ATOM_ATTR:
         /* スペシャルアトムはgroundの結果をunaryの結果とする */
         if (!SP_ATOM_IS_GROUND(rc->wt(atomi))) {
+          mut.unlock();
           return FALSE;
         }
+        mut.unlock();
         break;
       default:
+        mut.unlock();
         break;
       }
-    } else if (((LmnSymbolAtomRef)rc->wt(atomi))->get_arity() != 1)
+    } else if (((LmnSymbolAtomRef)rc->wt(atomi))->get_arity() != 1){
+      mut.unlock();
       return FALSE;
+    }
+    mut.unlock();
     break;
   }
   case INSTR_ISINT: {
     LmnInstrVar atomi;
     READ_VAL(LmnInstrVar, instr, atomi);
-
-    if (rc->at(atomi) != LMN_INT_ATTR)
+    mut.lock();
+    if (rc->at(atomi) != LMN_INT_ATTR){
+      mut.unlock();
       return FALSE;
+    }
+    mut.unlock();
     break;
   }
   case INSTR_ISFLOAT: {
@@ -3724,9 +3664,13 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
     LmnInstrVar atom1, atom2;
     READ_VAL(LmnInstrVar, instr, atom1);
     READ_VAL(LmnInstrVar, instr, atom2);
-
-    if (!((long)rc->wt(atom1) <= (long)rc->wt(atom2)))
+    
+    mut.lock();
+    if (!((long)rc->wt(atom1) <= (long)rc->wt(atom2))){
+      mut.unlock();
       return FALSE;
+    }
+    mut.unlock();
     break;
   }
   case INSTR_IGT: {
@@ -3921,7 +3865,7 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
 
     READ_VAL(LmnInstrVar, instr, atomi);
     READ_VAL(LmnLinkAttr, instr, attr);
-    // mut.lock();
+    mut.lock();
     rc->at(atomi) = attr;
     if (LMN_ATTR_IS_DATA(attr)) {
       LmnWord w;
@@ -3940,7 +3884,7 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
       rc->wt(atomi) = f;
     }
     rc->tt(atomi) = TT_OTHER; /* ヘッドに存在しないのでコピー対象外 */
-    // mut.unlock();
+    mut.unlock();
     break;
   }
   case INSTR_ALLOCATOMINDIRECT: {
