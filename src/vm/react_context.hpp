@@ -240,7 +240,7 @@ public:
   }
   void deactivate_by_id(int id){
     // std::cout << "ID " << id;
-    mut.lock();
+    // mut.lock();
     for(int i=0;i<memstack.size(); i++){
       if(memstack[i]->id == id){
         LmnMembraneRef nowm = memstack[i];
@@ -272,11 +272,11 @@ public:
         return;
       }
     }
-    mut.unlock();
+    // mut.unlock();
   }
   void erace_by_id(int id){
     // std::cout << "ID " << id;
-    mut.lock();
+    // mut.lock();
     for(int i=0;i<memstack.size(); i++){
       if(memstack[i]->id == id){
         memstack.erase(memstack.begin()+i);
@@ -284,7 +284,7 @@ public:
         return;
       }
     }
-    mut.unlock();
+    // mut.unlock();
   }
   LmnMembrane *memstack_peek() {
     return memstack.back();

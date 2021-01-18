@@ -139,7 +139,7 @@ static BOOL mem_eq(LmnReactCxtRef rc, LmnMembraneRef mem, LmnRuleRef rule) {
   if (!ent)
     return FALSE;
 
-  mut.lock();
+  // mut.lock();
 
   EACH_ATOM(op, ent, ({
               LmnMembraneRef mem0, mem1;
@@ -223,7 +223,7 @@ static BOOL mem_eq(LmnReactCxtRef rc, LmnMembraneRef mem, LmnRuleRef rule) {
 
               return TRUE;
             }));
-  mut.unlock();
+  // mut.unlock();
   return FALSE;
 }
 
