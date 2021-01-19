@@ -318,8 +318,11 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
           // 作成したものを順次実行
           for(int i=0;i<mrcs.size();i++){
             std::cout << "child thread will start" << std::endl;
-            react(mrcs[i], lmrs[i], 1);
-            // ts.push_back(std::thread(react, mrcs[i], lmrs[i], 1));
+            if(ti >= 1)
+              react(mrcs[i], lmrs[i], ti+1);
+            else{
+              ts.push_back(std::thread(react, mrcs[i], lmrs[i], ti+1));
+            }
           }
           for(int i=0;i<ts.size();i++){
             ts[i].join();
@@ -1099,6 +1102,8 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
   // mut.lock();
   // std::cout << instr_spec.at((LmnInstruction)op).op_str << " " << ti << std::endl;
   // mut.unlock();
+
+  std::cout << instr_spec.at((LmnInstruction)op).op_str << " " << std::this_thread::get_id() << std::endl;
 
   switch (op) {
   case INSTR_SPEC: {
@@ -3161,6 +3166,8 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
   case INSTR_COPYHLGROUND:
   case INSTR_COPYHLGROUNDINDIRECT:
   case INSTR_COPYGROUND: {
+    std::cout << "COPY GROUND" << std::endl;
+
     LmnInstrVar dstlist, srclist, memi;
     Vector *srcvec, *dstlovec, *retvec; /* 変数番号のリスト */
     ProcessTableRef atommap;
@@ -3340,6 +3347,7 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
     }
     case INSTR_REMOVEGROUND:
       // mut.lock();
+      std::cout << "REMOVE GROUND " << std::this_thread::get_id() << std::endl;
       ((LmnMembraneRef)rc->wt(memi))->remove_ground(srcvec);
       // mut.unlock();
       break;
