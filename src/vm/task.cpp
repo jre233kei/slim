@@ -277,44 +277,62 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
 
     BOOL reacted = false;
     std::vector<int> ids;
-    std::vector<std::thread> ts;
 
-    std::set<long> created_mems;
+
+    std::set<LmnMembraneRef> created_mems;
 
 
       do{
+        // まずはルールを実行
         reacted = react_all_rulesets(ctx,m,ti);
-      }while(reacted);
 
-        // mut.lock();
+        std::cout << "child created " << m->child_mem_num() << std::endl;
 
-      std::cout << "child" << m->child_mem_num() << std::endl;
+        // もし子膜が存在したら
+        if(m->child_mem_num() > 0){
 
-      if(m->child_mem_num() > 0){
-        LmnMembraneRef m_child = m->child_head;
-        for(int i=0;i<m->child_mem_num(); i++){
+          mut.lock();
+          std::vector<std::thread> ts;
+          std::vector<MemReactContext *> mrcs;
+          std::vector<LmnMembraneRef> lmrs;
 
-          if(created_mems.count((long) m_child)==0){
-            MemReactContext *ctx_copied = new MemReactContext(*ctx);
-            // react(ctx_copied, m_child, 1);
-            ts.push_back(std::thread(react, ctx_copied, m_child, 1));
-            created_mems.insert((long) m_child);
+          LmnMembraneRef m_child = m->child_head;
+          // 子膜の数だけreact_contextを作る
+          for(int i=0;i<m->child_mem_num(); i++){
+
+            // まだ作成されていない場合
+            if(created_mems.count(m_child)==0){
+
+              MemReactContext *ctx_copied = new MemReactContext(*ctx);
+
+              mrcs.push_back(ctx_copied);
+              lmrs.push_back(m_child);
+
+              created_mems.insert(m_child);
+            }
+            if(i<m->child_mem_num()-1)
+              m_child = m_child->next;
           }
-          if(i<m->child_mem_num()-1)
-            m_child = m_child->next;
+          mut.unlock();
+
+          // 作成したものを順次実行
+          for(int i=0;i<mrcs.size();i++){
+            std::cout << "child thread will start" << std::endl;
+            react(mrcs[i], lmrs[i], 1);
+            // ts.push_back(std::thread(react, mrcs[i], lmrs[i], 1));
+          }
+          for(int i=0;i<ts.size();i++){
+            ts[i].join();
+          }
         }
-      }
-        // mut.unlock();
-      
 
-      for(int i=0;i<ts.size();i++){
-        ts[i].join();
-      }
-
-      // 子膜へのルール適用は全て終了させた
-      do{
-        reacted = react_all_rulesets(ctx,m,ti);
       }while(reacted);
+
+      std::cout << "thread terminated" << std::endl;
+      // 子膜へのルール適用は全て終了させた
+      // do{
+      //   reacted = react_all_rulesets(ctx,m,ti);
+      // }while(reacted);
   };
 
   // ルート膜スレッドを動かす
@@ -431,9 +449,9 @@ static inline BOOL react_ruleset(LmnReactCxtRef rc, LmnMembraneRef mem,
       profile_rule_obj_set(rs, r);
 #endif
     // std::cout << "rule start [" << ti << "] " << std::endl;
-    // mut.lock();
+    mut.lock();
     BOOL reacted = react_rule(rc, mem, r, ti);
-    // mut.unlock();
+    mut.unlock();
     // std::cout << "rule end [" << ti << "] " << std::endl;
     if (reacted){
       // std::cout << "ruleset ok [" << ti << "]" << std::endl;
@@ -4499,9 +4517,9 @@ bool slim::vm::interpreter::run(int ti=9999) {
     bool stop = false;
     do {
       // std::cout << "command start [" << ti << "] " << std::endl;
-      mut.lock();
+      // mut.lock();
       result = exec_command(this->rc, this->rule, stop, ti);
-      mut.unlock();
+      // mut.unlock();
       // std::cout << "command end [" << ti << "] " << std::endl;
     } while (!stop);
 
