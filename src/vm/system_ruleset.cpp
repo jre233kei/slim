@@ -154,26 +154,26 @@ static BOOL mem_eq(LmnReactCxtRef rc, LmnMembraneRef mem, LmnRuleRef rule) {
 
               out_attr0 = op->get_attr(0);
               if (LMN_ATTR_IS_DATA(out_attr0)){
-                mut.unlock();
+                // mut.unlock();
                 return FALSE;
               }
 
               out0 = (LmnSymbolAtomRef)op->get_link(0);
               if (out0->get_functor() != LMN_OUT_PROXY_FUNCTOR) {
-                mut.unlock();
+                // mut.unlock();
                 return FALSE;
               }
 
               in0 = (LmnSymbolAtomRef)out0->get_link(0);
               out_attr1 = op->get_attr(1);
               if (LMN_ATTR_IS_DATA(out_attr1)) {
-                mut.unlock();
+                // mut.unlock();
                 return FALSE;
               }
 
               out1 = (LmnSymbolAtomRef)op->get_link(1);
               if (out1->get_functor() != LMN_OUT_PROXY_FUNCTOR) {
-                mut.unlock();
+                // mut.unlock();
                 return FALSE;
               }
 
@@ -224,7 +224,7 @@ static BOOL mem_eq(LmnReactCxtRef rc, LmnMembraneRef mem, LmnRuleRef rule) {
               lmn_mem_delete_atom(mem, op, LMN_ATTR_MAKE_LINK(0));
               lmn_mem_delete_atom(mem, temp0, LMN_ATTR_MAKE_LINK(0));
               lmn_mem_delete_atom(mem, temp1, LMN_ATTR_MAKE_LINK(0));
-              mut.unlock();
+              // mut.unlock();
 
               return TRUE;
             }));

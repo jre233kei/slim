@@ -268,7 +268,7 @@ public:
             break;
           nowm = nowm->parent;
         }
-        mut.unlock();
+        // mut.unlock();
         return;
       }
     }
@@ -280,7 +280,7 @@ public:
     for(int i=0;i<memstack.size(); i++){
       if(memstack[i]->id == id){
         memstack.erase(memstack.begin()+i);
-        mut.unlock();
+        // mut.unlock();
         return;
       }
     }
