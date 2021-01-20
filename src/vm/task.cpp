@@ -317,12 +317,12 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
 
           // 作成したものを順次実行
           for(int i=0;i<mrcs.size();i++){
-            std::cout << "child thread will start" << std::endl;
-            if(ti >= 1)
+            std::cout << "child thread will start " << i << std::endl;
+            // if(ti >= 1)
               react(mrcs[i], lmrs[i], ti+1);
-            else{
-              ts.push_back(std::thread(react, mrcs[i], lmrs[i], ti+1));
-            }
+            // else{
+            //   ts.push_back(std::thread(react, mrcs[i], lmrs[i], ti+1));
+            // }
           }
           for(int i=0;i<ts.size();i++){
             ts[i].join();
@@ -453,6 +453,7 @@ static inline BOOL react_ruleset(LmnReactCxtRef rc, LmnMembraneRef mem,
 #endif
     // std::cout << "rule start [" << ti << "] " << std::endl;
     mut.lock();
+    std::cout << "rule : " << r->name << std::endl;
     BOOL reacted = react_rule(rc, mem, r, ti);
     mut.unlock();
     // std::cout << "rule end [" << ti << "] " << std::endl;
@@ -3250,7 +3251,11 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
 
     this->push_stackframe([=](interpreter &itr, bool result) {
       free_links(dstlovec);
-      delete retvec;
+      if(retvec){
+        delete retvec;
+      }else{
+        std::cout << "retvec not found" << std::endl;
+      }
       LMN_ASSERT(result);
       return result ? command_result::Success : command_result::Failure;
     });
