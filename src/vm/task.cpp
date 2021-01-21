@@ -288,7 +288,7 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
         // まずはルールを実行
         reacted = react_all_rulesets(ctx,m,ti);
 
-        std::cout << "child exists " << m->child_mem_num() << std::endl;
+        // std::cout << "child exists " << m->child_mem_num() << std::endl;
 
         // もし子膜が存在したら
         if(m->child_mem_num() > 0){
@@ -305,7 +305,7 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
             // まだ作成されていない場合
             if(processed_mems.count(m_child)==0){
 
-              std::cout << "child context created" << std::endl;
+              // std::cout << "child context created" << std::endl;
               MemReactContext *ctx_copied = new MemReactContext(*ctx);
 
               mrcs.push_back(ctx_copied);
@@ -320,9 +320,9 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
 
           // 作成したものを順次実行
           for(int i=0;i<mrcs.size();i++){
-            std::cout << "child thread will start " << i << std::endl;
-            std::cout << lmrs[i] << std::endl;
-            std::cout << *lmrs[i] << std::endl;
+            // std::cout << "child thread will start " << i << std::endl;
+            // std::cout << lmrs[i] << std::endl;
+            // std::cout << *lmrs[i] << std::endl;
             if(ti >= 1)
               react(mrcs[i], lmrs[i], ti+1);
             else{
@@ -455,7 +455,7 @@ static inline BOOL react_ruleset(LmnReactCxtRef rc, LmnMembraneRef mem,
 #endif
     // std::cout << "rule start [" << ti << "] " << std::endl;
     // mut.lock();
-    std::cout << "rule : " << r->name << std::endl;
+    // std::cout << "rule : " << r->name << std::endl;
     BOOL reacted = react_rule(rc, mem, r, ti);
     // mut.unlock();
     // std::cout << "rule end [" << ti << "] " << std::endl;
