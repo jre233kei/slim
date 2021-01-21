@@ -323,11 +323,11 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
             std::cout << "child thread will start " << i << std::endl;
             std::cout << lmrs[i] << std::endl;
             std::cout << *lmrs[i] << std::endl;
-            // if(ti >= 1)
+            if(ti >= 1)
               react(mrcs[i], lmrs[i], ti+1);
-            // else{
-            //   ts.push_back(std::thread(react, mrcs[i], lmrs[i], ti+1));
-            // }
+            else{
+              ts.push_back(std::thread(react, mrcs[i], lmrs[i], ti+1));
+            }
           }
           for(int i=0;i<ts.size();i++){
             ts[i].join();
@@ -3258,11 +3258,7 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
 
     this->push_stackframe([=](interpreter &itr, bool result) {
       free_links(dstlovec);
-      if(retvec){
-        delete retvec;
-      }else{
-        std::cout << "retvec not found" << std::endl;
-      }
+      delete retvec;
       LMN_ASSERT(result);
       return result ? command_result::Success : command_result::Failure;
     });
