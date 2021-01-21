@@ -287,6 +287,7 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
       do{
         // まずはルールを実行
         reacted = react_all_rulesets(ctx,m,ti);
+      }while(reacted);
 
         // std::cout << "child exists " << m->child_mem_num() << std::endl;
 
@@ -334,9 +335,15 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
           }
         }
 
+
+      do{
+        // まずはルールを実行
+        reacted = react_all_rulesets(ctx,m,ti);
       }while(reacted);
 
-      std::cout << "thread terminated" << std::endl;
+      
+
+      // std::cout << "thread terminated" << std::endl;
       // 子膜へのルール適用は全て終了させた
   };
 
@@ -2486,7 +2493,7 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
     mp = new LmnMembrane(); /*lmn_new_mem(memf);*/
     int parent_mem_id = ((LmnMembraneRef)rc->wt(parentmemi))->id;
     // std::cout << "new! " << parent_mem_id << " " << mp->id << std::endl;
-    std::cout << "new! " << mp << std::endl;
+    // std::cout << "new! " << mp << std::endl;
     if(processed_mems.count(mp)>0){
       std::cout << "ERASE!!" << std::endl;
       processed_mems.erase(mp);
