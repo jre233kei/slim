@@ -44,36 +44,60 @@
 #include "vector.h"
 #include "vm/vm.h"
 
+#include <unordered_map>
+#include <functional>
+
+#include <mutex>
+
+
 /*----------------------------------------------------------------------
  * memory allocation for atom
  */
 
 static memory_pool **atom_memory_pools[128];
 
+// need to change
+static int override_core_num = 96;
+
+std::vector<std::mutex> mp_muts = std::vector<std::mutex>(override_core_num);
+
+std::unordered_map<int, int> tmap;
+
+int get_cid(){
+  std::hash<std::thread::id> hasher;
+  int cid = hasher(std::this_thread::get_id());
+  return abs(cid) % override_core_num;
+}
+
 void mpool_init() {
   int i, core_num, arity_num;
   arity_num = ARY_SIZEOF(atom_memory_pools);
-  core_num = lmn_env.core_num;
+  // core_num = lmn_env.core_num;
+  mut.lock();
+  core_num = override_core_num;
   for (i = 0; i < arity_num; i++) {
     atom_memory_pools[i] =
         (memory_pool **)malloc(sizeof(memory_pool *) * core_num);
     memset(atom_memory_pools[i], 0, sizeof(memory_pool *) * core_num);
   }
+  mut.unlock();
 }
 
 LmnSymbolAtomRef lmn_new_atom(LmnFunctor f) {
   LmnSymbolAtomRef ap;
   int arity, cid;
   arity = LMN_FUNCTOR_ARITY(lmn_functor_table, f);
-  cid = env_my_thread_id();
+  // cid = env_my_thread_id();
+  cid = get_cid();
 
+  // std::cout << "newatom id : " << get_cid() << std::endl;
+
+  mp_muts[cid].lock();
   if (atom_memory_pools[arity][cid] == 0) {
-    // ここもロックをかけた方が良いかも？
     atom_memory_pools[arity][cid] = memory_pool_new(LMN_SATOM_SIZE(arity));
   }
-  mut.lock();
   ap = (LmnSymbolAtomRef)memory_pool_malloc(atom_memory_pools[arity][cid]);
-  mut.unlock();
+  mp_muts[cid].unlock();
   ap->set_functor(f);
   ap->set_id(0);
 
@@ -86,13 +110,16 @@ void lmn_delete_atom(LmnSymbolAtomRef ap) {
   env_return_id(ap->get_id());
 
   arity = LMN_FUNCTOR_ARITY(lmn_functor_table, ap->get_functor());
-  cid = env_my_thread_id();
+  // cid = env_my_thread_id();
+  cid = get_cid();
+  mp_muts[cid].lock();
   memory_pool_free(atom_memory_pools[arity][cid], ap);
+  mp_muts[cid].unlock();
 }
 
 void free_atom_memory_pools(void) {
   unsigned int i, j, arity_num, core_num;
-
+  mut.lock();
   arity_num = ARY_SIZEOF(atom_memory_pools);
   core_num = lmn_env.core_num;
   for (i = 0; i < arity_num; i++) {
@@ -103,6 +130,7 @@ void free_atom_memory_pools(void) {
     }
     free(atom_memory_pools[i]);
   }
+  mut.unlock();
 }
 
 /*----------------------------------------------------------------------

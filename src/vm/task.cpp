@@ -294,7 +294,6 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
         // もし子膜が存在したら
         if(m->child_mem_num() > 0){
 
-          mut.lock();
           std::vector<std::thread> ts;
           std::vector<MemReactContext *> mrcs;
           std::vector<LmnMembraneRef> lmrs;
@@ -317,22 +316,25 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
             if(i<m->child_mem_num()-1)
               m_child = m_child->next;
           }
-          mut.unlock();
 
           // 作成したものを順次実行
           for(int i=0;i<mrcs.size();i++){
-            // std::cout << "child thread will start " << i << std::endl;
+            std::cout << "child thread will start " << i << std::endl;
             // std::cout << lmrs[i] << std::endl;
             // std::cout << *lmrs[i] << std::endl;
-            if(ti >= 1)
-              react(mrcs[i], lmrs[i], ti+1);
-            else{
+            // if(ti >= 1)
+            //   react(mrcs[i], lmrs[i], ti+1);
+            // else{
               ts.push_back(std::thread(react, mrcs[i], lmrs[i], ti+1));
-            }
+            // }
           }
+          
+          // mut.lock();
           for(int i=0;i<ts.size();i++){
+            std::cout << "child thread will end " << i << std::endl;
             ts[i].join();
           }
+          // mut.unlock();
         }
 
 
@@ -1812,9 +1814,9 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
       }
 #endif
     }
-    mut.lock();
+    // mut.lock();
     lmn_mem_push_atom((LmnMembraneRef)rc->wt(memi), (LmnAtomRef)ap, attr);
-    mut.unlock();
+    // mut.unlock();
     rc->reg(atomi) = {(LmnWord)ap, attr, TT_ATOM};
 
     // std::stringstream ss_end;
