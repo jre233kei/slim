@@ -2574,10 +2574,10 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
 
     READ_VAL(LmnInstrVar, instr, memi);
 
-    // mut.lock();
+    mut.lock();
     mp = (LmnMembraneRef)rc->wt(memi);
     delete mp;
-    // mut.unlock();
+    mut.unlock();
     break;
   }
   case INSTR_ADDMEM: {
@@ -5397,9 +5397,10 @@ Vector *links_from_idxs(const Vector *link_idxs, LmnReactCxtRef rc) {
 
 void free_links(Vector *links) {
   unsigned long i;
-
+  mut.lock();
   for (i = 0; i < links->get_num(); i++) {
     LMN_FREE(links->get(i));
   }
   delete links;
+  mut.unlock();
 }

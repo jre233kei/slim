@@ -256,7 +256,9 @@ private:
     unsigned int b = n / buckets_size;
     if (b < this->num_buckets && this->tbl[b])
       return;
+      mut.lock();
     this->tbl[b] = LMN_NALLOC(value_type, buckets_size);
+    mut.unlock();
     for (int i = 0; i < buckets_size; i++)
       this->tbl[b][i] = unused;
   }

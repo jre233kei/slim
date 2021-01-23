@@ -61,7 +61,7 @@ static int override_core_num = 96;
 
 std::vector<std::mutex> mp_muts = std::vector<std::mutex>(override_core_num);
 
-std::unordered_map<int, int> tmap;
+// std::unordered_map<int, int> tmap;
 
 int get_cid(){
   std::hash<std::thread::id> hasher;
@@ -107,7 +107,7 @@ LmnSymbolAtomRef lmn_new_atom(LmnFunctor f) {
 void lmn_delete_atom(LmnSymbolAtomRef ap) {
   int arity, cid;
 
-  env_return_id(ap->get_id());
+  // env_return_id(ap->get_id());
 
   arity = LMN_FUNCTOR_ARITY(lmn_functor_table, ap->get_functor());
   // cid = env_my_thread_id();
