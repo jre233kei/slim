@@ -107,7 +107,7 @@ LmnSymbolAtomRef lmn_new_atom(LmnFunctor f) {
 void lmn_delete_atom(LmnSymbolAtomRef ap) {
   int arity, cid;
 
-  env_return_id(ap->get_id());
+  // env_return_id(ap->get_id());
 
   arity = LMN_FUNCTOR_ARITY(lmn_functor_table, ap->get_functor());
   // cid = env_my_thread_id();
