@@ -157,7 +157,7 @@ LmnMembrane::LmnMembrane(){
   this->name = ANONYMOUS;
   this->id = 0UL;
   this->atomset = LMN_CALLOC(struct AtomListEntry *, this->atomset_size);
-  this->set_id(env_gen_next_id());
+  this->set_id(atomic_id++);
 
 #ifdef USE_FIRSTCLASS_RULE
   this->firstclass_rulesets = new Vector(4);
@@ -195,7 +195,7 @@ LmnMembrane::~LmnMembrane(){
   }
   this->rulesets.clear();
   
-  env_return_id(this->mem_id());
+  // env_return_id(this->mem_id());
 #ifdef USE_FIRSTCLASS_RULE
   delete this->firstclass_rulesets;
 #endif
@@ -322,7 +322,7 @@ void mem_push_symbol_atom(LmnMembraneRef mem, LmnSymbolAtomRef atom) {
   // if文も含めてロックが必要。今後要検証
   // mut.lock();
   if (atom->get_id() == 0) { /* 膜にpushしたならばidを割り当てる */
-    atom->set_id(env_gen_next_id());
+    atom->set_id(atomic_id++);
   }
   // mut.unlock();
 

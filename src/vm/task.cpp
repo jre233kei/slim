@@ -287,7 +287,7 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
       do{
         // まずはルールを実行
         reacted = react_all_rulesets(ctx,m,ti);
-      }while(reacted);
+      // }while(reacted);
 
         // std::cout << "child exists " << m->child_mem_num() << std::endl;
 
@@ -306,7 +306,7 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
             if(processed_mems.count(m_child)==0){
 
               // std::cout << "child context created" << std::endl;
-              MemReactContext *ctx_copied = new MemReactContext(*ctx);
+              MemReactContext *ctx_copied = new MemReactContext(mem);
 
               mrcs.push_back(ctx_copied);
               lmrs.push_back(m_child);
@@ -319,28 +319,28 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
 
           // 作成したものを順次実行
           for(int i=0;i<mrcs.size();i++){
-            std::cout << "child thread will start " << i << std::endl;
+            // std::cout << "child thread will start " << ti << std::endl;
             // std::cout << lmrs[i] << std::endl;
             // std::cout << *lmrs[i] << std::endl;
-            // if(ti >= 1)
-              // react(mrcs[i], lmrs[i], ti+1);
-            // else{
+            if(ti >= 3)
+              react(mrcs[i], lmrs[i], ti+1);
+            else{
               ts.push_back(std::thread(react, mrcs[i], lmrs[i], ti+1));
-            // }
+            }
           }
           
           // mut.lock();
           for(int i=0;i<ts.size();i++){
-            std::cout << "child thread will end " << i << std::endl;
+            // std::cout << "child thread will end " << i << std::endl;
             ts[i].join();
           }
           // mut.unlock();
         }
 
 
-      do{
-        // まずはルールを実行
-        reacted = react_all_rulesets(ctx,m,ti);
+      // do{
+      //   // まずはルールを実行
+      //   reacted = react_all_rulesets(ctx,m,ti);
       }while(reacted);
 
       
@@ -1115,7 +1115,7 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
   // std::cout << instr_spec.at((LmnInstruction)op).op_str << " " << ti << std::endl;
   // mut.unlock();
 
-  std::cout << instr_spec.at((LmnInstruction)op).op_str << " " << std::this_thread::get_id() << std::endl;
+  // std::cout << instr_spec.at((LmnInstruction)op).op_str << " " << std::this_thread::get_id() << std::endl;
 
   switch (op) {
   case INSTR_SPEC: {
@@ -2497,7 +2497,7 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
     // std::cout << "new! " << parent_mem_id << " " << mp->id << std::endl;
     // std::cout << "new! " << mp << std::endl;
     if(processed_mems.count(mp)>0){
-      std::cout << "ERASE!!" << std::endl;
+      // std::cout << "ERASE!!" << std::endl;
       processed_mems.erase(mp);
     }
     ((LmnMembraneRef)rc->wt(parentmemi))->add_child_mem(mp);
@@ -3183,7 +3183,7 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
   case INSTR_COPYHLGROUND:
   case INSTR_COPYHLGROUNDINDIRECT:
   case INSTR_COPYGROUND: {
-    std::cout << "COPY GROUND" << std::endl;
+    // std::cout << "COPY GROUND" << std::endl;
 
     LmnInstrVar dstlist, srclist, memi;
     Vector *srcvec, *dstlovec, *retvec; /* 変数番号のリスト */
@@ -3364,7 +3364,7 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
     }
     case INSTR_REMOVEGROUND:
       // mut.lock();
-      std::cout << "REMOVE GROUND " << std::this_thread::get_id() << std::endl;
+      // std::cout << "REMOVE GROUND " << std::this_thread::get_id() << std::endl;
       ((LmnMembraneRef)rc->wt(memi))->remove_ground(srcvec);
       // mut.unlock();
       break;
@@ -4542,9 +4542,9 @@ bool slim::vm::interpreter::run(int ti=9999) {
     bool stop = false;
     do {
       // std::cout << "command start [" << ti << "] " << std::endl;
-      mut.lock();
+      // mut.lock();
       result = exec_command(this->rc, this->rule, stop, ti);
-      mut.unlock();
+      // mut.unlock();
       // std::cout << "command end [" << ti << "] " << std::endl;
     } while (!stop);
 
