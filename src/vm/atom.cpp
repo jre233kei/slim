@@ -184,9 +184,9 @@ LmnSymbolAtomRef lmn_copy_satom(LmnSymbolAtomRef atom) {
   f = atom->get_functor();
   newatom = lmn_new_atom(f);
 
-  mut.lock();
+  // mut.lock();
   memcpy((void *)newatom, (void *)atom, LMN_SATOM_SIZE(LMN_FUNCTOR_ARITY(lmn_functor_table, f)));
-  mut.unlock();
+  // mut.unlock();
 
   newatom->set_id(0);
   return newatom;

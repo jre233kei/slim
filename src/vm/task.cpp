@@ -323,7 +323,7 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
             // std::cout << lmrs[i] << std::endl;
             // std::cout << *lmrs[i] << std::endl;
             // if(ti >= 1)
-            //   react(mrcs[i], lmrs[i], ti+1);
+              // react(mrcs[i], lmrs[i], ti+1);
             // else{
               ts.push_back(std::thread(react, mrcs[i], lmrs[i], ti+1));
             // }
@@ -1115,7 +1115,7 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
   // std::cout << instr_spec.at((LmnInstruction)op).op_str << " " << ti << std::endl;
   // mut.unlock();
 
-  // std::cout << instr_spec.at((LmnInstruction)op).op_str << " " << std::this_thread::get_id() << std::endl;
+  std::cout << instr_spec.at((LmnInstruction)op).op_str << " " << std::this_thread::get_id() << std::endl;
 
   switch (op) {
   case INSTR_SPEC: {
@@ -2563,9 +2563,9 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
     READ_VAL(LmnInstrVar, instr, memi);
     READ_VAL(LmnInstrVar, instr, parenti);
 
-    mut.lock();
+    // mut.lock();
     ((LmnMembraneRef)rc->wt(parenti))->remove_mem((LmnMembraneRef)rc->wt(memi));
-    mut.unlock();
+    // mut.unlock();
     break;
   }
   case INSTR_FREEMEM: {
@@ -2574,10 +2574,10 @@ bool slim::vm::interpreter::exec_command(LmnReactCxt *rc, LmnRuleRef rule,
 
     READ_VAL(LmnInstrVar, instr, memi);
 
-    mut.lock();
+    // mut.lock();
     mp = (LmnMembraneRef)rc->wt(memi);
     delete mp;
-    mut.unlock();
+    // mut.unlock();
     break;
   }
   case INSTR_ADDMEM: {
@@ -4542,9 +4542,9 @@ bool slim::vm::interpreter::run(int ti=9999) {
     bool stop = false;
     do {
       // std::cout << "command start [" << ti << "] " << std::endl;
-      // mut.lock();
+      mut.lock();
       result = exec_command(this->rc, this->rule, stop, ti);
-      // mut.unlock();
+      mut.unlock();
       // std::cout << "command end [" << ti << "] " << std::endl;
     } while (!stop);
 
@@ -5397,10 +5397,10 @@ Vector *links_from_idxs(const Vector *link_idxs, LmnReactCxtRef rc) {
 
 void free_links(Vector *links) {
   unsigned long i;
-  mut.lock();
+  // mut.lock();
   for (i = 0; i < links->get_num(); i++) {
     LMN_FREE(links->get(i));
   }
   delete links;
-  mut.unlock();
+  // mut.unlock();
 }

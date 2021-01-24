@@ -73,14 +73,14 @@ void mpool_init() {
   int i, core_num, arity_num;
   arity_num = ARY_SIZEOF(atom_memory_pools);
   // core_num = lmn_env.core_num;
-  mut.lock();
+  // mut.lock();
   core_num = override_core_num;
   for (i = 0; i < arity_num; i++) {
     atom_memory_pools[i] =
         (memory_pool **)malloc(sizeof(memory_pool *) * core_num);
     memset(atom_memory_pools[i], 0, sizeof(memory_pool *) * core_num);
   }
-  mut.unlock();
+  // mut.unlock();
 }
 
 LmnSymbolAtomRef lmn_new_atom(LmnFunctor f) {
@@ -119,7 +119,7 @@ void lmn_delete_atom(LmnSymbolAtomRef ap) {
 
 void free_atom_memory_pools(void) {
   unsigned int i, j, arity_num, core_num;
-  mut.lock();
+  // mut.lock();
   arity_num = ARY_SIZEOF(atom_memory_pools);
   core_num = lmn_env.core_num;
   for (i = 0; i < arity_num; i++) {
@@ -130,7 +130,7 @@ void free_atom_memory_pools(void) {
     }
     free(atom_memory_pools[i]);
   }
-  mut.unlock();
+  // mut.unlock();
 }
 
 /*----------------------------------------------------------------------
