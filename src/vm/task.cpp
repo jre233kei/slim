@@ -319,7 +319,7 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
 
           // 作成したものを順次実行
           for(int i=0;i<mrcs.size();i++){
-            std::cout << "child thread will start " << i << std::endl;
+            // std::cout << "child thread will start " << i << std::endl;
             // std::cout << lmrs[i] << std::endl;
             // std::cout << *lmrs[i] << std::endl;
             // if(ti >= 1)
@@ -331,7 +331,7 @@ static void mem_oriented_loop(MemReactContext *ctx, LmnMembraneRef mem) {
           
           // mut.lock();
           for(int i=0;i<ts.size();i++){
-            std::cout << "child thread will end " << i << std::endl;
+            // std::cout << "child thread will end " << i << std::endl;
             ts[i].join();
           }
           // mut.unlock();
