@@ -41,11 +41,14 @@
 #include "verifier/runtime_status.h"
 
 #include <climits>
+#include <atomic>
 
 struct Vector *lmn_id_pool;
 struct LmnEnv lmn_env;
 struct LmnProfiler lmn_prof;
 LMN_TLS_TYPE(LmnTLS) lmn_tls;
+
+std::atomic<int> atomic_id;
 
 //static void env_init(void);
 

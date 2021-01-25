@@ -506,6 +506,8 @@ void lmn_stream_destroy(void);
                                              : lmn_tls.proc_next_id++)
 #define env_next_id() (lmn_tls.proc_next_id)
 #
+extern std::atomic<int> atomic_id;
+
 #elif /**/ defined(USE_TLS_PTHREAD_KEY)
 static inline unsigned long env_gen_state_id() {
   LmnTLS *p = (LmnTLS *)lmn_TLS_get_value(lmn_tls);
